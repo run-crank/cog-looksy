@@ -2,7 +2,6 @@ import * as grpc from 'grpc';
 import * as needle from 'needle';
 import { Field } from '../core/base-step';
 import { FieldDefinition } from '../proto/cog_pb';
-import { UserAwareMixin } from './mixins';
 import { ImageComparisonMixin } from './mixins/image-comparison';
 import { LooksyApiClient } from './looksy-api-client';
 /**
@@ -23,10 +22,9 @@ class ClientWrapper {
   public static expectedAuthFields: Field[] = [{
     field: 'endpoint',
     type: FieldDefinition.Type.URL,
-    description: 'REST API endpoint, e.g. https://image-compare-service-722879364416.us-central1.run.app'
-  }
-
-];
+    description: 'REST API endpoint, e.g. https://image-compare-service-722879364416.us-central1.run.app',
+  },
+  ];
 
   /**
    * Private instance of the wrapped API client. You will almost certainly want
@@ -58,8 +56,8 @@ class ClientWrapper {
 
 }
 
-interface ClientWrapper extends UserAwareMixin, ImageComparisonMixin {}
-applyMixins(ClientWrapper, [UserAwareMixin, ImageComparisonMixin]);
+interface ClientWrapper extends ImageComparisonMixin {}
+applyMixins(ClientWrapper, [ImageComparisonMixin]);
 
 function applyMixins(derivedCtor: any, baseCtors: any[]) {
   baseCtors.forEach((baseCtor) => {
