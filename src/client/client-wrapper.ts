@@ -3,7 +3,8 @@ import * as needle from 'needle';
 import { Field } from '../core/base-step';
 import { FieldDefinition } from '../proto/cog_pb';
 import { UserAwareMixin } from './mixins';
-
+import { ImageComparisonMixin } from './mixins/image-comparison';
+import { LooksyApiClient } from './looksy-api-client';
 /**
  * This is a wrapper class around the API client for your Cog. An instance of
  * this class is passed to the constructor of each of your steps, and can be
@@ -20,17 +21,18 @@ class ClientWrapper {
    * If your Cog does not require authentication, set this to an empty array.
    */
   public static expectedAuthFields: Field[] = [{
-    field: 'userAgent',
-    type: FieldDefinition.Type.STRING,
-    description: 'User Agent String',
-    help: 'This is for demonstration purposes only. In an actual Cog, you would use this field to describe how to find this auth field in the underlying system.',
-  }];
+    field: 'endpoint',
+    type: FieldDefinition.Type.URL,
+    description: 'REST API endpoint, e.g. https://image-compare-service-722879364416.us-central1.run.app'
+  }
+
+];
 
   /**
    * Private instance of the wrapped API client. You will almost certainly want
    * to swap this out for an API client specific to your Cog's needs.
    */
-  public client: any;
+  client: LooksyApiClient;
 
   /**
    * Constructs an instance of the ClientWwrapper, authenticating the wrapped
@@ -44,21 +46,20 @@ class ClientWrapper {
    *   simplify automated testing. Should default to the class/constructor of
    *   the underlying/wrapped API client.
    */
-  constructor (auth: grpc.Metadata, clientConstructor = needle) {
+  constructor (auth: grpc.Metadata, clientConstructor = LooksyApiClient) {
     // Call auth.get() for any field defined in the static expectedAuthFields
     // array here. The argument passed to get() should match the "field" prop
     // declared on the definition object above.
-    const uaString: string = auth.get('userAgent').toString();
-    this.client = clientConstructor;
-
-    // Authenticate the underlying client here.
-    this.client.defaults({ user_agent: uaString });
+    console.debug('creating auth constructor');
+    const endpoint = auth.get('endpoint')[0].toString();
+    console.debug('endpoint', endpoint);
+    this.client = new clientConstructor(endpoint, needle);
   }
 
 }
 
-interface ClientWrapper extends UserAwareMixin {}
-applyMixins(ClientWrapper, [UserAwareMixin]);
+interface ClientWrapper extends UserAwareMixin, ImageComparisonMixin {}
+applyMixins(ClientWrapper, [UserAwareMixin, ImageComparisonMixin]);
 
 function applyMixins(derivedCtor: any, baseCtors: any[]) {
   baseCtors.forEach((baseCtor) => {
