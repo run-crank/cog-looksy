@@ -2,6 +2,7 @@ import * as chai from 'chai';
 import { default as sinon } from 'ts-sinon';
 import * as sinonChai from 'sinon-chai';
 import 'mocha';
+import * as needle from 'needle';
 
 import { ClientWrapper } from '../../src/client/client-wrapper';
 import { Metadata } from 'grpc';
@@ -10,34 +11,52 @@ chai.use(sinonChai);
 
 describe('ClientWrapper', () => {
   const expect = chai.expect;
-  let needleConstructorStub: any;
+  let clientConstructorStub: any;
   let metadata: Metadata;
   let clientWrapperUnderTest: ClientWrapper;
 
   beforeEach(() => {
-    needleConstructorStub = sinon.stub();
-    needleConstructorStub.defaults = sinon.stub();
-  });
-
-  it('authenticates', () => {
-    // Construct grpc metadata and assert the client was authenticated.
-    const expectedCallArgs = { user_agent: 'Some/UserAgent String' };
+    clientConstructorStub = sinon.stub();
+    clientConstructorStub.prototype.compareImages = sinon.stub();
+    
     metadata = new Metadata();
-    metadata.add('userAgent', expectedCallArgs.user_agent);
-
-    // Assert that the underlying API client was authenticated correctly.
-    clientWrapperUnderTest = new ClientWrapper(metadata, needleConstructorStub);
-    expect(needleConstructorStub.defaults).to.have.been.calledWith(expectedCallArgs);
+    metadata.add('endpoint', 'https://image-compare-service.example.com');
   });
 
-  it('getUserByEmail', () => {
-    const expectedEmail = 'test@example.com';
-    clientWrapperUnderTest = new ClientWrapper(metadata, needleConstructorStub);
-    clientWrapperUnderTest.getUserByEmail(expectedEmail);
-
-    expect(needleConstructorStub).to.have.been.calledWith(
-      `https://jsonplaceholder.typicode.com/users?email=${expectedEmail}`,
+  it('authenticates with the endpoint', () => {
+    // Create a new client wrapper with our metadata
+    clientWrapperUnderTest = new ClientWrapper(metadata, clientConstructorStub);
+    
+    // Assert that the client constructor was called with the correct endpoint and needle
+    expect(clientConstructorStub).to.have.been.calledWith(
+      'https://image-compare-service.example.com',
+      needle
     );
   });
 
+  it('compareImages passes through to the client', async () => {
+    const image1 = 'base64encodedimage1';
+    const image2 = 'base64encodedimage2';
+    const expectedResponse = {
+      statusCode: 200,
+      body: {
+        rmse: 0.5,
+        status: 'success',
+        diffImageUrl: 'https://example.com/diff.png',
+        images: {
+          source1: { url: 'https://example.com/image1.png' },
+          source2: { url: 'https://example.com/image2.png' }
+        },
+        timestamp: '2023-01-01T00:00:00Z'
+      }
+    };
+    
+    clientConstructorStub.prototype.compareImages.resolves(expectedResponse);
+    clientWrapperUnderTest = new ClientWrapper(metadata, clientConstructorStub);
+    
+    const result = await clientWrapperUnderTest.compareImages(image1, image2);
+    
+    expect(clientWrapperUnderTest.client.compareImages).to.have.been.calledWith(image1, image2);
+    expect(result).to.deep.equal(expectedResponse);
+  });
 });

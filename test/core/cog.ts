@@ -3,12 +3,11 @@ import * as chai from 'chai';
 import { default as sinon } from 'ts-sinon';
 import * as sinonChai from 'sinon-chai';
 import 'mocha';
-
-import { Step as ProtoStep, StepDefinition, FieldDefinition, RunStepResponse, RunStepRequest } from '../../src/proto/cog_pb';
-import { Cog } from '../../src/core/cog';
-import { CogManifest } from '../../src/proto/cog_pb';
-import { Metadata } from 'grpc';
 import { Duplex } from 'stream';
+import { Metadata, ServerUnaryCall, sendUnaryData } from 'grpc';
+
+import { Step as ProtoStep, StepDefinition, FieldDefinition, RunStepResponse, RunStepRequest, CogManifest, ManifestRequest } from '../../src/proto/cog_pb';
+import { Cog } from '../../src/core/cog';
 
 chai.use(sinonChai);
 
@@ -16,48 +15,59 @@ describe('Cog:GetManifest', () => {
   const expect = chai.expect;
   let cogUnderTest: Cog;
   let clientWrapperStub: any;
+  let mockCall: Partial<ServerUnaryCall<ManifestRequest>>;
 
   beforeEach(() => {
     clientWrapperStub = sinon.stub();
     cogUnderTest = new Cog(clientWrapperStub);
+    mockCall = {
+      request: new ManifestRequest(),
+      metadata: new Metadata(),
+      cancelled: false,
+      getPeer: () => '',
+      sendMetadata: () => {},
+    };
   });
 
   it('should return expected cog metadata', (done) => {
     const version: string = JSON.parse(fs.readFileSync('package.json').toString('utf8')).version;
-    cogUnderTest.getManifest(null, (err, manifest: CogManifest) => {
-      expect(manifest.getName()).to.equal('stackmoxie/looksy');
-      expect(manifest.getLabel()).to.equal('Looksy');
-      expect(manifest.getVersion()).to.equal(version);
+    const callback: sendUnaryData<CogManifest> = (err, manifest) => {
+      expect(manifest?.getName()).to.equal('stackmoxie/looksy');
+      expect(manifest?.getLabel()).to.equal('Looksy');
+      expect(manifest?.getVersion()).to.equal(version);
       done();
-    });
+    };
+    cogUnderTest.getManifest(mockCall as ServerUnaryCall<ManifestRequest>, callback);
   });
 
   it('should return expected cog auth fields', (done) => {
-    cogUnderTest.getManifest(null, (err, manifest: CogManifest) => {
-      const authFields: any[] = manifest.getAuthFieldsList().map((field: FieldDefinition) => {
+    const callback: sendUnaryData<CogManifest> = (err, manifest) => {
+      const authFields: any[] = manifest?.getAuthFieldsList().map((field: FieldDefinition) => {
         return field.toObject();
-      });
+      }) || [];
 
-      // Useragent auth field
-      const ua: any = authFields.filter(a => a.key === 'userAgent')[0];
-      expect(ua.type).to.equal(FieldDefinition.Type.STRING);
-      expect(ua.optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
-      expect(!!ua.help).to.equal(true);
+      // Endpoint auth field
+      const endpoint: any = authFields.find(a => a.key === 'endpoint');
+      expect(endpoint.type).to.equal(FieldDefinition.Type.URL);
+      expect(endpoint.optionality).to.equal(FieldDefinition.Optionality.REQUIRED);
+      expect(!!endpoint.description).to.equal(true);
 
       done();
-    });
+    };
+    cogUnderTest.getManifest(mockCall as ServerUnaryCall<ManifestRequest>, callback);
   });
 
   it('should return expected step definitions', (done) => {
-    cogUnderTest.getManifest(null, (err, manifest: CogManifest) => {
-      const stepDefs: StepDefinition[] = manifest.getStepDefinitionsList();
+    const callback: sendUnaryData<CogManifest> = (err, manifest) => {
+      const stepDefs: StepDefinition[] = manifest?.getStepDefinitionsList() || [];
 
-      // Step definitions list includes user-field-equals step.
-      const hasUserFieldEquals: boolean = stepDefs.filter(s => s.getStepId() === 'UserFieldEqualsStep').length === 1;
-      expect(hasUserFieldEquals).to.equal(true);
+      // Step definitions list includes CompareImagesUsingRMSE step
+      const hasCompareImages: boolean = stepDefs.some(s => s.getStepId() === 'CompareImagesUsingRMSE');
+      expect(hasCompareImages).to.equal(true);
 
       done();
-    });
+    };
+    cogUnderTest.getManifest(mockCall as ServerUnaryCall<ManifestRequest>, callback);
   });
 
 });
@@ -84,20 +94,22 @@ describe('Cog:RunStep', () => {
     grpcUnaryCall.metadata = new Metadata();
     grpcUnaryCall.metadata.add('anythingReally', 'some-value');
 
-    cogUnderTest.runStep(grpcUnaryCall, (err, response: RunStepResponse) => {
+    const callback: sendUnaryData<RunStepResponse> = (err, response) => {
       expect(clientWrapperStub).to.have.been.calledWith(grpcUnaryCall.metadata);
       done();
-    })
+    };
+    cogUnderTest.runStep(grpcUnaryCall, callback);
   });
 
   it('responds with error when called with unknown stepId', (done) => {
     protoStep.setStepId('NotRealStep');
 
-    cogUnderTest.runStep(grpcUnaryCall, (err, response: RunStepResponse) => {
-      expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
-      expect(response.getMessageFormat()).to.equal('Unknown step %s');
+    const callback: sendUnaryData<RunStepResponse> = (err, response) => {
+      expect(response?.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
+      expect(response?.getMessageFormat()).to.equal('Unknown step %s');
       done();
-    });
+    };
+    cogUnderTest.runStep(grpcUnaryCall, callback);
   });
 
   it('invokes step class as expected', (done) => {
@@ -110,12 +122,13 @@ describe('Cog:RunStep', () => {
     cogUnderTest = new Cog(clientWrapperStub, mockTestStepMap);
     protoStep.setStepId('TestStepId');
 
-    cogUnderTest.runStep(grpcUnaryCall, (err, response: RunStepResponse) => {
+    const callback: sendUnaryData<RunStepResponse> = (err, response) => {
       expect(mockTestStepMap.TestStepId).to.have.been.calledOnce;
       expect(mockStepExecutor.executeStep).to.have.been.calledWith(protoStep);
-      expect(response).to.deep.equal(expectedResponse);
+      expect(response as RunStepResponse).to.deep.equal(expectedResponse);
       done();
-    });
+    };
+    cogUnderTest.runStep(grpcUnaryCall, callback);
   });
 
   it('responds with error when step class throws an exception', (done) => {
@@ -127,10 +140,11 @@ describe('Cog:RunStep', () => {
     cogUnderTest = new Cog(clientWrapperStub, mockTestStepMap);
     protoStep.setStepId('TestStepId');
 
-    cogUnderTest.runStep(grpcUnaryCall, (err, response: RunStepResponse) => {
-      expect(response.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
+    const callback: sendUnaryData<RunStepResponse> = (err, response) => {
+      expect(response?.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
       done();
-    });
+    };
+    cogUnderTest.runStep(grpcUnaryCall, callback);
   });
 
 });
@@ -167,7 +181,7 @@ describe('Cog:RunSteps', () => {
     // Does not attempt to reinstantiate client.
     grpcDuplexStream.emit('data', runStepRequest);
     return expect(clientWrapperStub).to.have.been.calledOnce;
-});
+  });
 
   it('responds with error when called with unknown stepId', (done) => {
     // Construct step request
@@ -184,7 +198,7 @@ describe('Cog:RunSteps', () => {
       expect(result.getOutcome()).to.equal(RunStepResponse.Outcome.ERROR);
       expect(result.getMessageFormat()).to.equal('Unknown step %s');
       done();
-    }, 1)
+    }, 1);
   });
 
   it('invokes step class as expected', (done) => {
