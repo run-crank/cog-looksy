@@ -7,6 +7,8 @@ export class CompareImagesUsingRMSE extends BaseStep implements StepInterface {
   protected stepName: string = 'Compare Images';
   protected stepExpression: string = 'compare (?<image1>.+) and (?<image2>.+) using looksy with allowed rmse (?<rmse>[\\d.]+)';
   protected stepType: StepDefinition.Type = StepDefinition.Type.VALIDATION;
+  protected actionList: string[] = ['compare'];
+  protected targetObject: string = 'Compare Images';
   protected expectedFields: Field[] = [{
     field: 'image1',
     type: FieldDefinition.Type.STRING,
