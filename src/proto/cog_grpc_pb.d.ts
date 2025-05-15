@@ -15,27 +15,27 @@ interface ICogServiceService extends grpc.ServiceDefinition<grpc.UntypedServiceI
 }
 
 interface ICogServiceService_IGetManifest extends grpc.MethodDefinition<cog_pb.ManifestRequest, cog_pb.CogManifest> {
-    path: string; // "/automaton.cog.CogService/GetManifest"
-    requestStream: boolean; // false
-    responseStream: boolean; // false
+    path: "/automaton.cog.CogService/GetManifest";
+    requestStream: false;
+    responseStream: false;
     requestSerialize: grpc.serialize<cog_pb.ManifestRequest>;
     requestDeserialize: grpc.deserialize<cog_pb.ManifestRequest>;
     responseSerialize: grpc.serialize<cog_pb.CogManifest>;
     responseDeserialize: grpc.deserialize<cog_pb.CogManifest>;
 }
 interface ICogServiceService_IRunStep extends grpc.MethodDefinition<cog_pb.RunStepRequest, cog_pb.RunStepResponse> {
-    path: string; // "/automaton.cog.CogService/RunStep"
-    requestStream: boolean; // false
-    responseStream: boolean; // false
+    path: "/automaton.cog.CogService/RunStep";
+    requestStream: false;
+    responseStream: false;
     requestSerialize: grpc.serialize<cog_pb.RunStepRequest>;
     requestDeserialize: grpc.deserialize<cog_pb.RunStepRequest>;
     responseSerialize: grpc.serialize<cog_pb.RunStepResponse>;
     responseDeserialize: grpc.deserialize<cog_pb.RunStepResponse>;
 }
 interface ICogServiceService_IRunSteps extends grpc.MethodDefinition<cog_pb.RunStepRequest, cog_pb.RunStepResponse> {
-    path: string; // "/automaton.cog.CogService/RunSteps"
-    requestStream: boolean; // true
-    responseStream: boolean; // true
+    path: "/automaton.cog.CogService/RunSteps";
+    requestStream: true;
+    responseStream: true;
     requestSerialize: grpc.serialize<cog_pb.RunStepRequest>;
     requestDeserialize: grpc.deserialize<cog_pb.RunStepRequest>;
     responseSerialize: grpc.serialize<cog_pb.RunStepResponse>;

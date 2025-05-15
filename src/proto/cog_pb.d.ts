@@ -26,29 +26,29 @@ export namespace ManifestRequest {
 
 export class CogManifest extends jspb.Message { 
     getName(): string;
-    setName(value: string): void;
+    setName(value: string): CogManifest;
 
     getLabel(): string;
-    setLabel(value: string): void;
+    setLabel(value: string): CogManifest;
 
     getVersion(): string;
-    setVersion(value: string): void;
+    setVersion(value: string): CogManifest;
 
     getHomepage(): string;
-    setHomepage(value: string): void;
+    setHomepage(value: string): CogManifest;
 
     clearStepDefinitionsList(): void;
     getStepDefinitionsList(): Array<StepDefinition>;
-    setStepDefinitionsList(value: Array<StepDefinition>): void;
+    setStepDefinitionsList(value: Array<StepDefinition>): CogManifest;
     addStepDefinitions(value?: StepDefinition, index?: number): StepDefinition;
 
     clearAuthFieldsList(): void;
     getAuthFieldsList(): Array<FieldDefinition>;
-    setAuthFieldsList(value: Array<FieldDefinition>): void;
+    setAuthFieldsList(value: Array<FieldDefinition>): CogManifest;
     addAuthFields(value?: FieldDefinition, index?: number): FieldDefinition;
 
     getAuthHelpUrl(): string;
-    setAuthHelpUrl(value: string): void;
+    setAuthHelpUrl(value: string): CogManifest;
 
 
     serializeBinary(): Uint8Array;
@@ -75,29 +75,37 @@ export namespace CogManifest {
 
 export class StepDefinition extends jspb.Message { 
     getStepId(): string;
-    setStepId(value: string): void;
+    setStepId(value: string): StepDefinition;
 
     getName(): string;
-    setName(value: string): void;
+    setName(value: string): StepDefinition;
 
     getHelp(): string;
-    setHelp(value: string): void;
+    setHelp(value: string): StepDefinition;
 
     getType(): StepDefinition.Type;
-    setType(value: StepDefinition.Type): void;
+    setType(value: StepDefinition.Type): StepDefinition;
 
     getExpression(): string;
-    setExpression(value: string): void;
+    setExpression(value: string): StepDefinition;
 
     clearExpectedFieldsList(): void;
     getExpectedFieldsList(): Array<FieldDefinition>;
-    setExpectedFieldsList(value: Array<FieldDefinition>): void;
+    setExpectedFieldsList(value: Array<FieldDefinition>): StepDefinition;
     addExpectedFields(value?: FieldDefinition, index?: number): FieldDefinition;
 
     clearExpectedRecordsList(): void;
     getExpectedRecordsList(): Array<RecordDefinition>;
-    setExpectedRecordsList(value: Array<RecordDefinition>): void;
+    setExpectedRecordsList(value: Array<RecordDefinition>): StepDefinition;
     addExpectedRecords(value?: RecordDefinition, index?: number): RecordDefinition;
+
+    clearActionList(): void;
+    getActionList(): Array<string>;
+    setActionList(value: Array<string>): StepDefinition;
+    addAction(value: string, index?: number): string;
+
+    getTargetObject(): string;
+    setTargetObject(value: string): StepDefinition;
 
 
     serializeBinary(): Uint8Array;
@@ -119,6 +127,8 @@ export namespace StepDefinition {
         expression: string,
         expectedFieldsList: Array<FieldDefinition.AsObject>,
         expectedRecordsList: Array<RecordDefinition.AsObject>,
+        actionList: Array<string>,
+        targetObject: string,
     }
 
     export enum Type {
@@ -130,19 +140,22 @@ export namespace StepDefinition {
 
 export class FieldDefinition extends jspb.Message { 
     getKey(): string;
-    setKey(value: string): void;
+    setKey(value: string): FieldDefinition;
 
     getOptionality(): FieldDefinition.Optionality;
-    setOptionality(value: FieldDefinition.Optionality): void;
+    setOptionality(value: FieldDefinition.Optionality): FieldDefinition;
 
     getType(): FieldDefinition.Type;
-    setType(value: FieldDefinition.Type): void;
+    setType(value: FieldDefinition.Type): FieldDefinition;
 
     getDescription(): string;
-    setDescription(value: string): void;
+    setDescription(value: string): FieldDefinition;
 
     getHelp(): string;
-    setHelp(value: string): void;
+    setHelp(value: string): FieldDefinition;
+
+    getBulksupport(): boolean;
+    setBulksupport(value: boolean): FieldDefinition;
 
 
     serializeBinary(): Uint8Array;
@@ -162,6 +175,7 @@ export namespace FieldDefinition {
         type: FieldDefinition.Type,
         description: string,
         help: string,
+        bulksupport: boolean,
     }
 
     export enum Optionality {
@@ -187,18 +201,18 @@ export namespace FieldDefinition {
 
 export class RecordDefinition extends jspb.Message { 
     getId(): string;
-    setId(value: string): void;
+    setId(value: string): RecordDefinition;
 
     getType(): RecordDefinition.Type;
-    setType(value: RecordDefinition.Type): void;
+    setType(value: RecordDefinition.Type): RecordDefinition;
 
     clearGuaranteedFieldsList(): void;
     getGuaranteedFieldsList(): Array<FieldDefinition>;
-    setGuaranteedFieldsList(value: Array<FieldDefinition>): void;
+    setGuaranteedFieldsList(value: Array<FieldDefinition>): RecordDefinition;
     addGuaranteedFields(value?: FieldDefinition, index?: number): FieldDefinition;
 
     getMayHaveMoreFields(): boolean;
-    setMayHaveMoreFields(value: boolean): void;
+    setMayHaveMoreFields(value: boolean): RecordDefinition;
 
 
     serializeBinary(): Uint8Array;
@@ -232,16 +246,16 @@ export class RunStepRequest extends jspb.Message {
     hasStep(): boolean;
     clearStep(): void;
     getStep(): Step | undefined;
-    setStep(value?: Step): void;
+    setStep(value?: Step): RunStepRequest;
 
     getRequestId(): string;
-    setRequestId(value: string): void;
+    setRequestId(value: string): RunStepRequest;
 
     getScenarioId(): string;
-    setScenarioId(value: string): void;
+    setScenarioId(value: string): RunStepRequest;
 
     getRequestorId(): string;
-    setRequestorId(value: string): void;
+    setRequestorId(value: string): RunStepRequest;
 
 
     serializeBinary(): Uint8Array;
@@ -265,13 +279,13 @@ export namespace RunStepRequest {
 
 export class Step extends jspb.Message { 
     getStepId(): string;
-    setStepId(value: string): void;
+    setStepId(value: string): Step;
 
 
     hasData(): boolean;
     clearData(): void;
     getData(): google_protobuf_struct_pb.Struct | undefined;
-    setData(value?: google_protobuf_struct_pb.Struct): void;
+    setData(value?: google_protobuf_struct_pb.Struct): Step;
 
 
     serializeBinary(): Uint8Array;
@@ -293,26 +307,26 @@ export namespace Step {
 
 export class RunStepResponse extends jspb.Message { 
     getOutcome(): RunStepResponse.Outcome;
-    setOutcome(value: RunStepResponse.Outcome): void;
+    setOutcome(value: RunStepResponse.Outcome): RunStepResponse;
 
     getMessageFormat(): string;
-    setMessageFormat(value: string): void;
+    setMessageFormat(value: string): RunStepResponse;
 
     clearMessageArgsList(): void;
     getMessageArgsList(): Array<google_protobuf_struct_pb.Value>;
-    setMessageArgsList(value: Array<google_protobuf_struct_pb.Value>): void;
+    setMessageArgsList(value: Array<google_protobuf_struct_pb.Value>): RunStepResponse;
     addMessageArgs(value?: google_protobuf_struct_pb.Value, index?: number): google_protobuf_struct_pb.Value;
 
     clearRecordsList(): void;
     getRecordsList(): Array<StepRecord>;
-    setRecordsList(value: Array<StepRecord>): void;
+    setRecordsList(value: Array<StepRecord>): RunStepResponse;
     addRecords(value?: StepRecord, index?: number): StepRecord;
 
 
     hasResponseData(): boolean;
     clearResponseData(): void;
     getResponseData(): google_protobuf_struct_pb.Struct | undefined;
-    setResponseData(value?: google_protobuf_struct_pb.Struct): void;
+    setResponseData(value?: google_protobuf_struct_pb.Struct): RunStepResponse;
 
 
     serializeBinary(): Uint8Array;
@@ -344,28 +358,28 @@ export namespace RunStepResponse {
 
 export class StepRecord extends jspb.Message { 
     getId(): string;
-    setId(value: string): void;
+    setId(value: string): StepRecord;
 
     getName(): string;
-    setName(value: string): void;
+    setName(value: string): StepRecord;
 
 
     hasKeyValue(): boolean;
     clearKeyValue(): void;
     getKeyValue(): google_protobuf_struct_pb.Struct | undefined;
-    setKeyValue(value?: google_protobuf_struct_pb.Struct): void;
+    setKeyValue(value?: google_protobuf_struct_pb.Struct): StepRecord;
 
 
     hasTable(): boolean;
     clearTable(): void;
     getTable(): TableRecord | undefined;
-    setTable(value?: TableRecord): void;
+    setTable(value?: TableRecord): StepRecord;
 
 
     hasBinary(): boolean;
     clearBinary(): void;
     getBinary(): BinaryRecord | undefined;
-    setBinary(value?: BinaryRecord): void;
+    setBinary(value?: BinaryRecord): StepRecord;
 
 
     getValueCase(): StepRecord.ValueCase;
@@ -407,11 +421,11 @@ export class TableRecord extends jspb.Message {
     hasHeaders(): boolean;
     clearHeaders(): void;
     getHeaders(): google_protobuf_struct_pb.Struct | undefined;
-    setHeaders(value?: google_protobuf_struct_pb.Struct): void;
+    setHeaders(value?: google_protobuf_struct_pb.Struct): TableRecord;
 
     clearRowsList(): void;
     getRowsList(): Array<google_protobuf_struct_pb.Struct>;
-    setRowsList(value: Array<google_protobuf_struct_pb.Struct>): void;
+    setRowsList(value: Array<google_protobuf_struct_pb.Struct>): TableRecord;
     addRows(value?: google_protobuf_struct_pb.Struct, index?: number): google_protobuf_struct_pb.Struct;
 
 
@@ -436,10 +450,10 @@ export class BinaryRecord extends jspb.Message {
     getData(): Uint8Array | string;
     getData_asU8(): Uint8Array;
     getData_asB64(): string;
-    setData(value: Uint8Array | string): void;
+    setData(value: Uint8Array | string): BinaryRecord;
 
     getMimeType(): string;
-    setMimeType(value: string): void;
+    setMimeType(value: string): BinaryRecord;
 
 
     serializeBinary(): Uint8Array;
