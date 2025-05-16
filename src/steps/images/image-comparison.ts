@@ -65,7 +65,7 @@ export class CompareImagesUsingRMSE extends BaseStep implements StepInterface {
       // Process the response
       if (response && response.body) {
         const result = response.body;
-        if (!result.rmse) {
+        if (result.rmse === undefined || result.rmse === null) {
           return this.error('Response from Looksy API does not contain RMSE value');
         }
         const actualRmse = result.rmse;
